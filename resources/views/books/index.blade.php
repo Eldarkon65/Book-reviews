@@ -1,0 +1,64 @@
+@extends('layouts.app')
+@section('content')
+    <h1 class="text-lg font-bold text-center mb-10">Books</h1>
+
+    <form method="GET" action="{{ route('books.index') }}" class="flex items-center mb-5">
+        <input type="text" name="title" placeholder="Search by title" value="{{ request('title') }}" class="input">
+        <input type="hidden" name="filter" value="{{ request('filter') }}">
+        <button type="submit" class="btn mx-1 bg-blue-300 " >Search</button>
+        <a href="{{ route('books.index') }}" class="btn mx-0.5 bg-red-300">Clear</a>
+        <a href="{{ route('books.create') }}" class="btn mx-0.5 bg-green-300">Add</a>
+    </form>
+
+    <div class="filter-container mb-4 flex">
+        @php
+            $filters = [
+                '' => 'Latest',
+                'popular_last_month' => 'Popular Last Month',
+                'popular_last_6months' => 'Popular Last 6 Months',
+                'highest_rating_last_month' => 'Highest Rating Last Month',
+                'highest_rating_last_6months' => 'Highest Rating Last 6 Months',
+            ];
+        @endphp
+
+        @foreach($filters as $key => $label)
+            <a href="{{ route('books.index', [...request()->query,'filter' => $key]) }}"
+               class="{{ request('filter') === $key || (request('filter') === null && $key === '') ? 'filter-item-active' : 'filter-item' }}">{{ $label }}</a>
+        @endforeach
+    </div>
+
+    <ul>
+        @forelse($books as $book)
+            <li class="mb-4">
+                <div class="book-item">
+                    <div
+                        class="flex flex-wrap items-center justify-between">
+                        <div class="w-full flex-grow sm:w-auto">
+                            <a href="{{ route('books.show', $book) }}" class="book-title">{{$book->title}}</a>
+                            <span class="book-author">{{ $book->author }}</span>
+                        </div>
+                        <div>
+                            <div class="book-rating">
+                                <x-alert :rating="$book->reviews_avg_rating"/>
+                            </div>
+                            <div class="book-review-count">
+                                out of {{ $book->reviews_count }} {{ Str::plural('review', $book->reviews_count) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        @empty
+            <li class="mb-4">
+                <div class="empty-book-item">
+                    <p class="empty-text">No books found</p>
+                    <a href="{{ route('books.index') }}" class="reset-link">Reset criteria</a>
+                </div>
+            </li>
+        @endforelse
+    </ul>
+
+
+
+
+@endsection
